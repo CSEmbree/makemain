@@ -2,7 +2,7 @@
 
 
 #compile mainmake
-gcc mm.c -o mm
+gcc src/mm.c -o $(pwd)/mm
 
 #make the executable runable without need for "./"
 chmod +rwx mm

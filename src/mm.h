@@ -23,12 +23,14 @@
 
 //enum RETURN_OPTIONS {SUCCESS, FAIL}; 
 enum MAIN_OPTIONS {INVALID, C, CPP, PYTHON, JAVA};
+enum TRUTH_VALUE {TRUE, FALSE};
 
 
 //prototypes
 int CreateMain(int fileType, char* fileName, char* authorName);
-int CheckValidOption(char* op);
-char* ExtractOption(char* text);
+void SetOptions(int numArgs, char** args);
+int CheckSupportedMain(char* op);
+char* ExtractMainType(char* text);
 void DisplayUsage(char* dialogue);
 
 

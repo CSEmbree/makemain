@@ -22,7 +22,10 @@ int main(int argc, char **argv)
 	if(argc>=2) 
 	{
 		fileName = argv[1];
-		mainType = CheckValidOption(ExtractOption(fileName));
+
+        SetOptions(argc, argv);
+
+		mainType = CheckSupportedMain(ExtractMainType(fileName));
 
 		if(argc==3)
 			authorName = argv[2];
@@ -30,7 +33,7 @@ int main(int argc, char **argv)
 		if( mainType != INVALID ) {
 			CreateMain(mainType, fileName, authorName);
 		} else {
-			printf("mm:: Main: ERROR: Main Type of '%s' not supported.\n", ExtractOption(fileName));
+			printf("mm:: Main: ERROR: Main Type of '%s' not supported.\n", ExtractMainType(fileName));
 			DisplayUsage(NULL);
 			return -1;
 		}
@@ -74,9 +77,27 @@ int CreateMain(int fileType, char* fileName, char* authorName)
 }
 
 
-int CheckValidOption(char* op)
+void SetOptions(int numArgs, char** args)
 {
-	printf("mm:: CheckValidOption: Checking if '%s' is a supported option.\n", op);
+    printf("mm:: CheckOptions: Checking if a supported option was passed by argument.\n");
+
+    for (int i = 0; i < numArgs; ++i)
+    {
+        if( strcmp(args[i], "-h") == 0 )
+        {
+           makeHeader = TRUE;
+           printf("mm:: CheckOptions: HEADER FLAG SET!\n");       
+        }
+    }
+    
+    printf("mm:: CheckOptions: Options have been chcked.\n");
+
+}
+
+
+int CheckSupportedMain(char* op)
+{
+	printf("mm:: CheckSupportedMain: Checking if '%s' is a supported option.\n", op);
 
 	int optionID = INVALID;
 
@@ -89,13 +110,13 @@ int CheckValidOption(char* op)
 	else if ( strcmp(op, "java") == 0 )
 		optionID = JAVA;
 
-	printf("mm:: CheckValidOption: option '%s' is of type: '%d'\n", op, optionID);
+	printf("mm:: CheckSupportedMain: option '%s' is of type: '%d'\n", op, optionID);
 
 	return optionID;
 }
 
 
-char* ExtractOption(char* text)
+char* ExtractMainType(char* text)
 {
 	char* extractedOption = NULL;
 	extractedOption = strstr(text, ".");
