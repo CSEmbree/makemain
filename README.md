@@ -54,3 +54,8 @@ JAVA
 ```
 	./mm hello.java	
 ```
+
+
+# Notes
+
+makemain was written in C for practice and lower level control.
