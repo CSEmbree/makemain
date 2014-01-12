@@ -1,5 +1,5 @@
 /*
- * AUTHOR: Cameron S. Embree
+ * AUTHOR:  Cameron S. Embree
  * CREATED: Wed Oct 16 23:13:14 2013
  *
  */
@@ -57,7 +57,6 @@ int MainInC(char* fileName, char* authorName)
 	//cleanup
 	fclose(sourceFile);
 	fclose(destFile);
-
 
 	return 0;
 }

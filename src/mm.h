@@ -1,5 +1,5 @@
 /*
- * AUTHOR: Cameron S. Embree
+ * AUTHOR:  Cameron S. Embree
  * CREATED: Wed Oct 16 23:13:14 2013
  *
  */
@@ -13,8 +13,8 @@
 #include <string.h>
 #include <time.h>
 
-//#include "returnResult.h"
 
+//#include "returnResult.h"
 #include "main_c.c"
 #include "main_cpp.c"
 #include "main_java.c"

@@ -1,5 +1,5 @@
 /*
- * AUTHOR: Cameron S. Embree
+ * AUTHOR:  Cameron S. Embree
  * CREATED: Wed Oct 16 23:13:14 2013
  *
  */
@@ -50,14 +50,14 @@ int MainInPython(char* fileName, char* authorName)
 
     //fill the rest of the default c from template
     char ch;
-    while( (ch = fgetc(sourceFile)) != EOF )
+    while( (ch = fgetc(sourceFile)) != EOF ) {
     	fputc( ch, destFile );
+    }
 
 	
 	//cleanup
 	fclose(sourceFile);
 	fclose(destFile);
-
 
 	return 0;
 }
