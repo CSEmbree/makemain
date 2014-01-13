@@ -100,3 +100,4 @@ makemain was written in C for practice and lower level control. Tested in Bash o
 - [ ] Improve setup experience
 - [ ] Allow removal of author name and timestamp with option? (-b --basic)
 - [ ] Account for errors when missing input that is expected
+- [ ] Make the executable `mm` runable from anywhere as part of the `make install`
