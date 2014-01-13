@@ -5,8 +5,9 @@ On OS X and Linux:
 
 ```
 	git clone https://github.com/CSEmbree/makemain.git
-	cd ~/<some_directory_path>/makemain
-	sh setup.sh
+	cd ~/<clone_path>/makemain
+	sourse setup.sh
+	make install
 ```
 
 # Running
@@ -26,7 +27,7 @@ For example:
 
 #Changing Default Main Text
 
-Inside the `/makemain/templates/` are the default formates. Edit those as desired as makemain simply addes to those templates.
+Inside the `/makemain/templates/` are the default formats for mains. Edit as desired as makemain simply addes to those templates.
 
 
 # Supported Languages
@@ -58,4 +59,4 @@ JAVA
 
 # Notes
 
-makemain was written in C for practice and lower level control.
+makemain was written in C for practice and lower level control. Works in Bash.
