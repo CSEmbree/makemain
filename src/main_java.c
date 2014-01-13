@@ -20,7 +20,11 @@ int MainInJava(char* fileName, char* authorName)
     	printf("mm:: MainInJava: ERROR: There was a problem creating the file: '%s'\n", fileName);
     	return -1;
     }
-    printf("mm:: MainInJava: Creating file '%s' with:\n\tauthor: %s\n", fileName, authorName);
+
+    
+    #ifdef DBUG
+    printf("mm:: MainInJava: Creating file '%s' with author: %s\n", fileName, authorName);
+    #endif
 
 
     //put default intro at the head of the Python file
@@ -40,7 +44,10 @@ int MainInJava(char* fileName, char* authorName)
 
     strcat( intro, created );
     strcat( intro, ctime(&currentTime) );
-    strcat( intro, " *\n");
+
+    strcat( intro, modified );
+    strcat( intro, ctime(&currentTime) );
+    strcat( intro, " * \n");
     strcat( intro, " */\n");
 	
 

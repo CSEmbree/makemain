@@ -26,18 +26,24 @@ int main(int argc, char **argv) {
 	char *permAuthorName = "";
 	
 
-	
-	printf("mm:: Received the '%d' arguments: ", argc); //TEST
-	for (int i = 0; i < argc; ++i) printf("%s ", argv[i]); //TEST
-	printf("\n"); //TEST
+	#ifdef DBUG
+	if (verboseTextFlag) {
+	    printf("mm:: Received the '%d' arguments: ", argc);
+	    for (int i = 0; i < argc; ++i) printf("%s ", argv[i]);
+	    printf("\n");
+	}
+	#endif
 
 
 	//set author name if it has been set permanently
 	permAuthorName = getenv(ENV_VAR_PERM_AUTHOR);
 	if (permAuthorName != NULL) {
 		authorName = permAuthorName;
+
+		#ifdef DBUG
+		printf("mm:: Main: Author name found in ENVAR: '%s'\n", authorName);
+		#endif
 	}
-	printf("Author name set to: %s\n", authorName);
 
 
 	if(argc>=2) {
@@ -53,21 +59,12 @@ int main(int argc, char **argv) {
 
 
 		if (optionalAuthorFlag == TRUE) {
-			//free(authorName);
 			authorName = ExtractOptionalAuthorName(argc, argv);			
 		}
 		
 
-
-				
-	
-		//fileName = argv[1];
-		//if(argc==3) authorName = argv[2];
-
-
 		//ensure only supported Languages are selected
 		mainType = CheckSupportedMain(ExtractMainType(fileName));
-
 
 
 
@@ -93,7 +90,10 @@ int CreateMain(int fileType, char* fileName, char* authorName)
 {
 	int creationResult = -1;
 
+	#ifdef DBUG
 	printf("mm:: CreateMain: Creating main type: '%d'...\n", fileType);
+	#endif
+
 
 	switch(fileType) {
 		case C:
@@ -112,7 +112,10 @@ int CreateMain(int fileType, char* fileName, char* authorName)
 		    break; //do nothing
 	}
 
+
+	#ifdef DBUG
 	printf("mm:: CreateMain: Creation result: %d.\n", creationResult);
+	#endif
 
 	return 0;
 }
@@ -120,7 +123,10 @@ int CreateMain(int fileType, char* fileName, char* authorName)
 
 void SetOptions(char* options)
 {
+	#ifdef DBUG
     printf("mm:: SetOptions: Checking that only supported option where passed by argument...\n");
+	#endif
+
 
     if( strchr(options, 'h') != NULL ) {
         makeHeader = TRUE;
@@ -137,7 +143,10 @@ void SetOptions(char* options)
         printf("mm:: SetOptions: VERBOSE TEXT FLAG SET!\n");       
     }
 
+
+	#ifdef DBUG
     printf("mm:: SetOptions: All options have been checked.\n");
+	#endif
 
     return;
 }
@@ -145,21 +154,34 @@ void SetOptions(char* options)
 
 char* ExtractOptions(int numArgs, char** args)
 {
+	#ifdef DBUG
     printf("mm:: ExtractOptions: Checking if any options where passed by argument...\n");
+	#endif
+
 
     char* optionsFound = NULL;
 
     for (int i = 0; i < numArgs; ++i) {
+    	
+    	#ifdef DBUG
     	printf("mm:: ExtractOptions: Checking for options in: '%s'...\n", args[i]);
+	    #endif
 
         if( strchr(args[i], '-') != NULL ) {
+           
+	       #ifdef DBUG
            printf("mm:: ExtractOptions: Found option(s)!\n");
+           #endif
+
            optionsFound = malloc(sizeof(strlen(args[i]))*sizeof(char)+1); //+1 for the zero-terminator
            optionsFound = args[i]; //take all the options at once   
         }
     }
     
+
+    #ifdef DBUG
     printf("mm:: ExtractOptions: All options have been checked, FOUND: '%s'.\n", optionsFound);
+	#endif
 
     return optionsFound;
 }
@@ -167,7 +189,10 @@ char* ExtractOptions(int numArgs, char** args)
 
 char* ExtractFileName(int numArgs, char** args)
 {
+	#ifdef DBUG
     printf("mm:: ExtractFileName: Extracting file name...\n");
+	#endif
+
 
     char* fileName = NULL;
 
@@ -178,8 +203,11 @@ char* ExtractFileName(int numArgs, char** args)
     	fileName = malloc(sizeof(strlen(args[numArgs-2]))*sizeof(char)+1); //+1 for the zero-terminator
     	fileName = args[numArgs-2];
     } 
-    
+
+
+	#ifdef DBUG    
     printf("mm:: ExtractFileName: Extracted file name: '%s'.\n", fileName);
+	#endif
 
     return fileName;
 }
@@ -187,14 +215,20 @@ char* ExtractFileName(int numArgs, char** args)
 
 char* ExtractOptionalAuthorName(int numArgs, char** args)
 {
+	#ifdef DBUG
     printf("mm:: ExtractFileName: Extracting optional author name...\n");
+	#endif
+
 
     char* optionalAuthorName = NULL;
 
     optionalAuthorName = malloc(sizeof(strlen(args[numArgs]))*sizeof(char)+1); //+1 for the zero-terminator
     optionalAuthorName = args[numArgs-1];
     
+
+    #ifdef DBUG
     printf("mm:: ExtractFileName: Extracted author name: '%s'.\n", optionalAuthorName);
+	#endif
 
     return optionalAuthorName;
 }
@@ -202,7 +236,10 @@ char* ExtractOptionalAuthorName(int numArgs, char** args)
 
 int CheckSupportedMain(char* op)
 {
+	#ifdef DBUG
 	printf("mm:: CheckSupportedMain: Checking if '%s' is a supported option...\n", op);
+	#endif
+
 
 	int optionID = INVALID;
 
@@ -216,7 +253,10 @@ int CheckSupportedMain(char* op)
 		optionID = JAVA;
 	}
 
+
+	#ifdef DBUG
 	printf("mm:: CheckSupportedMain: option '%s' is of type: '%d'\n", op, optionID);
+	#endif
 
 	return optionID;
 }
@@ -227,7 +267,11 @@ char* ExtractMainType(char* text)
 	char* extractedOption = NULL;
 	extractedOption = strstr(text, ".");
 
+
+	#ifdef DBUG
 	printf("mm:: ExtractMainType: Given: '%s', Extracted: '%s'\n", text, extractedOption+1);
+	#endif
+
 
 	return (extractedOption+1);
 }
@@ -247,7 +291,7 @@ char* concat(char *s1, char *s2)
 void DisplayUsage(char* dialogue)
 {
 	if(dialogue == NULL) {
-		printf("mm (MakeMain): generates a main file for either C (*.c), CPP (*.{c++,cpp}), Python (*.py).\n\n");
+		printf("mm (makemain):: generates a plain main file for either C (*.c), CPP (*.{c++,cpp}), Python (*.py).\n\n");
 	} else {
 		printf("%s\n", dialogue);
 	}

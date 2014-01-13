@@ -20,7 +20,11 @@ int MainInC(char* fileName, char* authorName)
     	printf("mm:: MainInC: ERROR: There was a problem creating the file: '%s'\n", fileName);
     	return -1;
     }
+
+
+    #ifdef DBUG
     printf("mm:: MainInC: Creating file '%s' with:\n\tauthor: %s\n", fileName, authorName);
+    #endif
 
 
     //put default intro at the head of the C file
@@ -39,6 +43,9 @@ int MainInC(char* fileName, char* authorName)
     strcat( intro, "\n");
 
     strcat( intro, created );
+    strcat( intro, ctime(&currentTime) );
+
+    strcat( intro, modified );
     strcat( intro, ctime(&currentTime) );
     strcat( intro, " * \n");
 	strcat( intro, " */\n");
