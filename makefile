@@ -16,4 +16,4 @@ debug:
 	$(CC) $(DEBUG) $(CFLAGS) $(MAIN) -o mm
 
 clean:
-	rm -rf mm
+	rm -rf mm *.dSYM
