@@ -12,20 +12,64 @@
 #include "mm.h"
 
 
+int makeHeader = FALSE;
+int optionalAuthorFlag = FALSE;
+int verboseTextFlag = FALSE;
+
+static char* ENV_VAR_PERM_AUTHOR = "MM_AUTHOR";
+
+
 int main(int argc, char **argv) {
-	int mainType = 0;
-	char *fileName = "hello.c";
-	char *authorName = "Cameron S. Embree";
+	int mainType = INVALID;
+	char *fileName = "default.c";
+	char *authorName = "<DEFAULT>";
+	char *permAuthorName = "";
 	
 
+	
+	printf("mm:: Received the '%d' arguments: ", argc); //TEST
+	for (int i = 0; i < argc; ++i) printf("%s ", argv[i]); //TEST
+	printf("\n"); //TEST
+
+
+	//set author name if it has been set permanently
+	permAuthorName = getenv(ENV_VAR_PERM_AUTHOR);
+	if (permAuthorName != NULL) {
+		authorName = permAuthorName;
+	}
+	printf("Author name set to: %s\n", authorName);
+
+
 	if(argc>=2) {
-		fileName = argv[1];
+		
+		//Set appropreate flags to alter behavior depending on optional arguments
+		char *optionsFound = ExtractOptions(argc, argv);
+		if (optionsFound != NULL) {
+			SetOptions(optionsFound);
+		}
 
-        SetOptions(argc, argv);
 
+		fileName = ExtractFileName(argc, argv);
+
+
+		if (optionalAuthorFlag == TRUE) {
+			//free(authorName);
+			authorName = ExtractOptionalAuthorName(argc, argv);			
+		}
+		
+
+
+				
+	
+		//fileName = argv[1];
+		//if(argc==3) authorName = argv[2];
+
+
+		//ensure only supported Languages are selected
 		mainType = CheckSupportedMain(ExtractMainType(fileName));
 
-		if(argc==3) authorName = argv[2];
+
+
 
 		if( mainType != INVALID ) {
 			CreateMain(mainType, fileName, authorName);
@@ -49,7 +93,7 @@ int CreateMain(int fileType, char* fileName, char* authorName)
 {
 	int creationResult = -1;
 
-	printf("mm:: CreateMain: Creating main type: '%d'\n", fileType);
+	printf("mm:: CreateMain: Creating main type: '%d'...\n", fileType);
 
 	switch(fileType) {
 		case C:
@@ -68,31 +112,97 @@ int CreateMain(int fileType, char* fileName, char* authorName)
 		    break; //do nothing
 	}
 
+	printf("mm:: CreateMain: Creation result: %d.\n", creationResult);
+
 	return 0;
 }
 
 
-void SetOptions(int numArgs, char** args)
+void SetOptions(char* options)
 {
-    printf("mm:: CheckOptions: Checking if a supported option was passed by argument.\n");
+    printf("mm:: SetOptions: Checking that only supported option where passed by argument...\n");
 
-    for (int i = 0; i < numArgs; ++i) {
-        if( strcmp(args[i], "-h") == 0 ) {
-           
-           makeHeader = TRUE;
-           printf("mm:: CheckOptions: HEADER FLAG SET!\n");       
-        }
+    if( strchr(options, 'h') != NULL ) {
+        makeHeader = TRUE;
+        printf("mm:: SetOptions: HEADER FLAG SET! - TODO-NOT HANDLED YET\n");       
     }
-    
-    printf("mm:: CheckOptions: Options have been chcked.\n");
+
+    if( strchr(options, 'a') != NULL ) {
+        optionalAuthorFlag = TRUE;
+        printf("mm:: SetOptions: OPTIONAL AUTHOR FLAG SET!\n");       
+    }
+
+    if( strchr(options, 'v') != NULL ) {
+        verboseTextFlag = TRUE;
+        printf("mm:: SetOptions: VERBOSE TEXT FLAG SET!\n");       
+    }
+
+    printf("mm:: SetOptions: All options have been checked.\n");
 
     return;
 }
 
 
+char* ExtractOptions(int numArgs, char** args)
+{
+    printf("mm:: ExtractOptions: Checking if any options where passed by argument...\n");
+
+    char* optionsFound = NULL;
+
+    for (int i = 0; i < numArgs; ++i) {
+    	printf("mm:: ExtractOptions: Checking for options in: '%s'...\n", args[i]);
+
+        if( strchr(args[i], '-') != NULL ) {
+           printf("mm:: ExtractOptions: Found option(s)!\n");
+           optionsFound = malloc(sizeof(strlen(args[i]))*sizeof(char)+1); //+1 for the zero-terminator
+           optionsFound = args[i]; //take all the options at once   
+        }
+    }
+    
+    printf("mm:: ExtractOptions: All options have been checked, FOUND: '%s'.\n", optionsFound);
+
+    return optionsFound;
+}
+
+
+char* ExtractFileName(int numArgs, char** args)
+{
+    printf("mm:: ExtractFileName: Extracting file name...\n");
+
+    char* fileName = NULL;
+
+    if (optionalAuthorFlag == FALSE) {
+    	fileName = malloc(sizeof(strlen(args[numArgs-1]))*sizeof(char)+1); //+1 for the zero-terminator
+    	fileName = args[numArgs-1];
+    } else {
+    	fileName = malloc(sizeof(strlen(args[numArgs-2]))*sizeof(char)+1); //+1 for the zero-terminator
+    	fileName = args[numArgs-2];
+    } 
+    
+    printf("mm:: ExtractFileName: Extracted file name: '%s'.\n", fileName);
+
+    return fileName;
+}
+
+
+char* ExtractOptionalAuthorName(int numArgs, char** args)
+{
+    printf("mm:: ExtractFileName: Extracting optional author name...\n");
+
+    char* optionalAuthorName = NULL;
+
+    optionalAuthorName = malloc(sizeof(strlen(args[numArgs]))*sizeof(char)+1); //+1 for the zero-terminator
+    optionalAuthorName = args[numArgs-1];
+    
+    printf("mm:: ExtractFileName: Extracted author name: '%s'.\n", optionalAuthorName);
+
+    return optionalAuthorName;
+}
+
+
 int CheckSupportedMain(char* op)
 {
-	printf("mm:: CheckSupportedMain: Checking if '%s' is a supported option.\n", op);
+	printf("mm:: CheckSupportedMain: Checking if '%s' is a supported option...\n", op);
 
 	int optionID = INVALID;
 
@@ -117,16 +227,27 @@ char* ExtractMainType(char* text)
 	char* extractedOption = NULL;
 	extractedOption = strstr(text, ".");
 
-	printf("mm:: ExtractOption: Given: '%s', Extracted: '%s'\n", text, extractedOption+1);
+	printf("mm:: ExtractMainType: Given: '%s', Extracted: '%s'\n", text, extractedOption+1);
 
 	return (extractedOption+1);
+}
+
+
+char* concat(char *s1, char *s2)
+{
+    char *result = malloc(strlen(s1)+strlen(s2)+1); //+1 for the zero-terminator
+    //TODO - check for errors in malloc
+    strcpy(result, s1);
+    strcat(result, s2);
+    
+    return result;
 }
 
 
 void DisplayUsage(char* dialogue)
 {
 	if(dialogue == NULL) {
-		printf("mm (MakeMain): generates a main file for either C (*.c), CPP (*.{c++,cpp}), Python (*.py).\n C FORM:\n\t mm hello.c\n CPP FORM:\n\t mm hello.py\n\n");
+		printf("mm (MakeMain): generates a main file for either C (*.c), CPP (*.{c++,cpp}), Python (*.py).\n\n");
 	} else {
 		printf("%s\n", dialogue);
 	}
