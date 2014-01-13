@@ -1,10 +1,11 @@
 #!/bin/bash
 
 
-#compile mainmake
-gcc src/mm.c -o $(pwd)/mm
+echo "mm:: Please enter a permanent author name: "
 
-#make the executable runable without need for "./"
-chmod +rwx mm
+read authorName
 
-#make link to standard execution path
+export MM_AUTHOR="${authorName}"
+
+echo "mm:: ran: export MM_AUTHOR=\"$authorName\""
+echo "mm:: Author name '$authorName' set! makemain is ready to use."
