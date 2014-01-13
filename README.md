@@ -59,4 +59,8 @@ JAVA
 
 # Notes
 
-makemain was written in C for practice and lower level control. Works in Bash.
+makemain was written in C for practice and lower level control. Tested in Bash on Mac OS X and Ubuntu.
+
+- [ ] include support for headers?
+- [ ] add templates for other languages
+- [ ] improve setup experience
