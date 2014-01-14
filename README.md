@@ -31,9 +31,13 @@ On OS X and Linux:
 	sudo make install
 ```
 
-The user will be prompted for a permanent author name but this can be skipped. To add a permanent author later can be done with either a fresh `sudo make install` or by just running the script `sudo sh setup.sh`. Essentially, `makefile` compiles makemain and `setup.sh` creates a wrapper script called `mm` (placed in `/usr/local/bin/` - hence the sudo) that calls makemain whenever the user wants to run mm. This level of indirection allows us to setup preferences like a permanent author name.
+The user will be prompted for a permanent author name but this can be skipped. To add a permanent author later can be done with either a fresh `sudo make install` or by just running the script `sudo sh setup.sh`. 
 
-Therefore, the script can simply be run after making the executable the first time to update the permanent author name.
+
+Essentially, `makefile` compiles makemain and `setup.sh` creates a wrapper script called `mm` (placed in `/usr/local/bin/` - hence the sudo) that calls makemain whenever the user wants to run mm. This level of indirection allows us to setup preferences like a permanent author name.
+
+
+An optional `sudo make debug` can be run to compile makemain and doing so allows you to see what is going on under the hood.
 
 
 
@@ -50,6 +54,16 @@ For example:
 ```
 	./mm helloworld.c
 ```
+
+
+# Cleanup
+
+On OSX and Linux:
+```
+	sudo make clean
+```
+Removed any and all compiled and generated files taking the state back to when it was origionally cloned.
+
 
 
 #Changing Default Main Text
