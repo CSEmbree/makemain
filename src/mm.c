@@ -13,17 +13,18 @@
 
 
 int makeHeader = FALSE;
-int optionalAuthorFlag = FALSE;
 int verboseTextFlag = FALSE;
 
 static char* ENV_VAR_PERM_AUTHOR = "MM_AUTHOR";
+static char* DEFAULT_FILE_NAME   = "default.c";
+static char* DEFAULT_AUTHOR_NAME = "<DEFAULT>";
 
 
 int main(int argc, char **argv) {
 	int mainType = INVALID;
-	char *fileName = "default.c";
-	char *authorName = "<DEFAULT>";
-	char *permAuthorName = "";
+	char *fileName = DEFAULT_FILE_NAME;
+	char *authorName = DEFAULT_AUTHOR_NAME;
+	char *permAuthorName = ""; //none assumed at start
 	
 
 	#ifdef DBUG
@@ -58,14 +59,18 @@ int main(int argc, char **argv) {
 		fileName = ExtractFileName(argc, argv);
 
 
-		if (optionalAuthorFlag == TRUE) {
-			authorName = ExtractOptionalAuthorName(argc, argv);			
+		char *optionalAuthor = ExtractOptionalAuthorName(argc, argv);			
+		if (optionalAuthor != NULL) {
+			#ifdef DBUG
+			printf("mm:: MAIN: Overrode author from '%s' to '%s'.\n", authorName, optionalAuthor);
+			#endif
+
+			authorName = optionalAuthor;
 		}
 		
 
 		//ensure only supported Languages are selected
 		mainType = CheckSupportedMain(ExtractMainType(fileName));
-
 
 
 		if( mainType != INVALID ) {
@@ -133,11 +138,6 @@ void SetOptions(char* options)
         printf("mm:: SetOptions: HEADER FLAG SET! - TODO-NOT HANDLED YET\n");       
     }
 
-    if( strchr(options, 'a') != NULL ) {
-        optionalAuthorFlag = TRUE;
-        printf("mm:: SetOptions: OPTIONAL AUTHOR FLAG SET!\n");       
-    }
-
     if( strchr(options, 'v') != NULL ) {
         verboseTextFlag = TRUE;
         printf("mm:: SetOptions: VERBOSE TEXT FLAG SET!\n");       
@@ -160,8 +160,9 @@ char* ExtractOptions(int numArgs, char** args)
 
 
     char* optionsFound = NULL;
+    int found = FALSE;
 
-    for (int i = 0; i < numArgs; ++i) {
+    for (int i = 0; (i < numArgs) && (found == FALSE); ++i) {
     	
     	#ifdef DBUG
     	printf("mm:: ExtractOptions: Checking for options in: '%s'...\n", args[i]);
@@ -173,8 +174,10 @@ char* ExtractOptions(int numArgs, char** args)
            printf("mm:: ExtractOptions: Found option(s)!\n");
            #endif
 
-           optionsFound = malloc(sizeof(strlen(args[i]))*sizeof(char)+1); //+1 for the zero-terminator
-           optionsFound = args[i]; //take all the options at once   
+           optionsFound = malloc(strlen(args[i])*sizeof(char)+1); //+1 for the zero-terminator
+           optionsFound = args[i]; //take all the options at once  
+
+           found = TRUE; 
         }
     }
     
@@ -195,14 +198,23 @@ char* ExtractFileName(int numArgs, char** args)
 
 
     char* fileName = NULL;
+    int found = FALSE;
 
-    if (optionalAuthorFlag == FALSE) {
-    	fileName = malloc(sizeof(strlen(args[numArgs-1]))*sizeof(char)+1); //+1 for the zero-terminator
-    	fileName = args[numArgs-1];
-    } else {
-    	fileName = malloc(sizeof(strlen(args[numArgs-2]))*sizeof(char)+1); //+1 for the zero-terminator
-    	fileName = args[numArgs-2];
-    } 
+    for (int i = 0; (i < numArgs) && (found == FALSE); ++i) {
+    	
+    	#ifdef DBUG
+    	printf("mm:: ExtractFileName: Checking for options in: '%s'...\n", args[i]);
+	    #endif
+
+        if( strchr(args[i], '.') != NULL ) {
+            fileName = args[i]; //file name is the string with the first occurance of a '.' char
+            found = TRUE;
+
+	        #ifdef DBUG
+            printf("mm:: ExtractFileName: Found option(s)! File Name is: '%s'\n", fileName);
+            #endif
+        }
+    }
 
 
 	#ifdef DBUG    
@@ -216,18 +228,44 @@ char* ExtractFileName(int numArgs, char** args)
 char* ExtractOptionalAuthorName(int numArgs, char** args)
 {
 	#ifdef DBUG
-    printf("mm:: ExtractFileName: Extracting optional author name...\n");
+    printf("mm:: ExtractOptionalAuthorName: Extracting optional author name...\n");
 	#endif
 
 
-    char* optionalAuthorName = NULL;
+    char* optionalAuthorName = "";
+    int found = FALSE;
 
-    optionalAuthorName = malloc(sizeof(strlen(args[numArgs]))*sizeof(char)+1); //+1 for the zero-terminator
-    optionalAuthorName = args[numArgs-1];
+    for (int i = 0; i < numArgs; ++i) {
+    	
+    	#ifdef DBUG
+    	printf("mm:: ExtractOptionalAuthorName: Checking for file name in: '%s'...\n", args[i]);
+	    #endif
+
+        if( (strchr(args[i], '.') != NULL) && (found == FALSE) ) {
+        	found = TRUE;
+           
+	        #ifdef DBUG
+            printf("mm:: ExtractOptionalAuthorName: Found file name!\n");
+            #endif
+        } else if ( (found == TRUE) && (i <= numArgs) ) {
+        	optionalAuthorName = concat(optionalAuthorName, args[i]);
+        	optionalAuthorName = concat(optionalAuthorName, " "); //for nicer spacing of overloaded author name
+
+	        #ifdef DBUG
+        	printf("mm:: ExtractOptionalAuthorName: Concating author name to: '%s'\n", optionalAuthorName);
+            #endif
+        }
+    }
+
+
+    //if no optional Author name was found, return NULL not an empty string
+    if ( strcmp(optionalAuthorName,"") == 0 ) {
+    	optionalAuthorName = NULL;
+    }
     
 
     #ifdef DBUG
-    printf("mm:: ExtractFileName: Extracted author name: '%s'.\n", optionalAuthorName);
+    printf("mm:: ExtractOptionalAuthorName: Extracted author name: '%s'.\n", optionalAuthorName);
 	#endif
 
     return optionalAuthorName;
