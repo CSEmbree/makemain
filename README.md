@@ -37,7 +37,7 @@ The user will be prompted for a permanent author name but this can be skipped. T
 Essentially, `makefile` compiles makemain and `setup.sh` creates a wrapper script called `mm` (placed in `/usr/local/bin/` - hence the sudo) that calls makemain whenever the user wants to run mm. This level of indirection allows us to setup preferences like a permanent author name.
 
 
-An optional `sudo make debug` can be run to compile makemain and doing so allows you to see what is going on under the hood.
+An optional `sudo make debug` will compile makemain and prints our what is going on under the hood for testing.
 
 
 
@@ -46,13 +46,18 @@ An optional `sudo make debug` can be run to compile makemain and doing so allows
 To run makemain, execute a command with the format:
 
 ```
-	./mm <fileName>.<extension>
+	mm <fileName>.<extension> [author]
 ```
 
 For example:
 	
 ```
-	./mm helloworld.c
+	mm helloworld.c
+```
+
+Or to overload the default author name:
+```
+	mm helloworld.c John Doe
 ```
 
 
@@ -62,7 +67,7 @@ On OSX and Linux:
 ```
 	sudo make clean
 ```
-Removed any and all compiled and generated files taking the state back to when it was origionally cloned.
+Removes all compiled and generated files taking the state back to when it was origionally cloned.
 
 
 
@@ -73,29 +78,13 @@ Inside the `/makemain/templates/` are the default formats for mains. Edit as des
 
 # Supported Languages
 
-C, C++, Python, Java in the respective forms:
+C, C++, Python and Java in the respective forms:
 
-C
-```
-	./mm hello.c
-```
+- C: `mm hello.c`
+- C++: `mm hello.c++` OR `mm hello.cpp`
+- PYTHON: `mm hello.py`
+- JAVA: `mm hello.java`
 
-C++ 
-```     
-	./mm hello.c++     
-	OR     
-	./mm hello.cpp 
-```
-
-PYTHON
-```
-	./mm hello.py
-```
-
-JAVA
-```
-	./mm hello.java	
-```
 
 # Update Permanent Author
 
