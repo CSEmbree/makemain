@@ -4,22 +4,32 @@
  *
  * Automatically generate a default main for a few languges
  *
- * EX: default c file format:
- *     ./mm <fileName>.c
  */
 
 
 #include "mm.h"
 
 
+//Option flags for changing program behavior
 int makeHeader = FALSE;
 int verboseTextFlag = FALSE;
 
-static char* ENV_VAR_PERM_AUTHOR = "MM_AUTHOR";
-static char* DEFAULT_FILE_NAME   = "default.c";
-static char* DEFAULT_AUTHOR_NAME = "<DEFAULT>";
+
+static char* ENV_VAR_PERM_AUTHOR = "MM_AUTHOR"; //optional ENVAR containing permanent author name
+static char* DEFAULT_FILE_NAME   = "default.c"; //default filename for debugging, should never show
+static char* DEFAULT_AUTHOR_NAME = "<DEFAULT>"; //default author for debugging, should never show
 
 
+
+/**
+ * @name main
+ * @param argc - number of array elements in 'argv'
+ * @param argv - array of strings for each argument delimiterized by spaces 
+ * 
+ * Create a basic main for supported languages.
+ * Make sure minimum user inut was provided and input was valid.
+ *
+ */
 int main(int argc, char **argv) {
 	int mainType = INVALID;
 	char *fileName = DEFAULT_FILE_NAME;
@@ -27,16 +37,14 @@ int main(int argc, char **argv) {
 	char *permAuthorName = ""; //none assumed at start
 	
 
-	#ifdef DBUG
 	if (verboseTextFlag) {
 	    printf("mm:: Received the '%d' arguments: ", argc);
 	    for (int i = 0; i < argc; ++i) printf("%s ", argv[i]);
 	    printf("\n");
 	}
-	#endif
 
 
-	//set author name if it has been set permanently
+	//update author name if it has already been set permanently
 	permAuthorName = getenv(ENV_VAR_PERM_AUTHOR);
 	if (permAuthorName != NULL) {
 		authorName = permAuthorName;
@@ -47,18 +55,21 @@ int main(int argc, char **argv) {
 	}
 
 
+	//insure minimum input requirement
 	if(argc>=2) {
 		
-		//Set appropreate flags to alter behavior depending on optional arguments
+		//Set appropreate option flags to alter behavior
 		char *optionsFound = ExtractOptions(argc, argv);
 		if (optionsFound != NULL) {
 			SetOptions(optionsFound);
 		}
 
-
+		//extract file name that is passed as an argument to mm
 		fileName = ExtractFileName(argc, argv);
 
 
+		//arguments after filename are used as an overloaded author name. 
+		// This name overrides any default or permanent one
 		char *optionalAuthor = ExtractOptionalAuthorName(argc, argv);			
 		if (optionalAuthor != NULL) {
 			#ifdef DBUG
@@ -69,10 +80,11 @@ int main(int argc, char **argv) {
 		}
 		
 
-		//ensure only supported Languages are selected
+		//ensure only a supported language was requested
 		mainType = CheckSupportedMain(ExtractMainType(fileName));
 
 
+		//create main only if a supported language was requested
 		if( mainType != INVALID ) {
 			CreateMain(mainType, fileName, authorName);
 		} else {
@@ -81,16 +93,25 @@ int main(int argc, char **argv) {
 			return -1;
 		}
 	} else { 
-		DisplayUsage(NULL);
+		//if minimum arguments to run is not met, display usage info
+		DisplayUsage(NULL); 
 	}
 
 	return 0;
 }
 
 
-////////////////////////////////////////////////////////////////////
+/*****************Support Methods*******************/
 
 
+/**
+ * @name SetOptions
+ * @param options - extracted options from origional user input, is in the form '-vba'.
+ * 
+ * sets internal flags to alter behavior depending on what options the user has selected.
+ * options are all optional characters that occured after a dash '-'.
+ *
+ */
 int CreateMain(int fileType, char* fileName, char* authorName) 
 {
 	int creationResult = -1;
@@ -114,6 +135,7 @@ int CreateMain(int fileType, char* fileName, char* authorName)
 		    creationResult = MainInJava(fileName, authorName);
 		    break;
 		default: 
+		    printf("mm:: CreateMain: ERROR: An unsupported main creation was encountered!\n");
 		    break; //do nothing
 	}
 
@@ -122,22 +144,32 @@ int CreateMain(int fileType, char* fileName, char* authorName)
 	printf("mm:: CreateMain: Creation result: %d.\n", creationResult);
 	#endif
 
-	return 0;
+	return creationResult; //TODO - make sure result from main creation is consistent.
 }
 
 
+/**
+ * @name SetOptions
+ * @param options - extracted options from origional user input, is in the form '-vba'.
+ * 
+ * sets internal flags to alter behavior depending on what options the user has selected.
+ * options are all optional characters that occured after a dash '-'.
+ *
+ */
 void SetOptions(char* options)
 {
 	#ifdef DBUG
     printf("mm:: SetOptions: Checking that only supported option where passed by argument...\n");
 	#endif
 
-
+    //check if a supported option was passed and handle it
+    //TODO - header flag creates a header with the same file name as the main
     if( strchr(options, 'h') != NULL ) {
         makeHeader = TRUE;
-        printf("mm:: SetOptions: HEADER FLAG SET! - TODO-NOT HANDLED YET\n");       
+        printf("mm:: SetOptions: HEADER FLAG SET! - TODO -NOT HANDLED YET\n");       
     }
 
+    //TODO - reports the result of makemain at the end of creation for user
     if( strchr(options, 'v') != NULL ) {
         verboseTextFlag = TRUE;
         printf("mm:: SetOptions: VERBOSE TEXT FLAG SET!\n");       
@@ -152,6 +184,15 @@ void SetOptions(char* options)
 }
 
 
+/**
+ * @name ExtractOptions
+ * @param numArgs - number of array elements in 'args'
+ * @param args - array of strings for each argument delimiterized by spaces 
+ * 
+ * Collects and returns any options found as a string. 
+ * Options are represented as any character following the '-' character before the next space ' '.
+ *
+ */
 char* ExtractOptions(int numArgs, char** args)
 {
 	#ifdef DBUG
@@ -160,7 +201,7 @@ char* ExtractOptions(int numArgs, char** args)
 
 
     char* optionsFound = NULL;
-    int found = FALSE;
+    int found = FALSE; //flag for finding first occurance of '-'
 
     for (int i = 0; (i < numArgs) && (found == FALSE); ++i) {
     	
@@ -190,6 +231,15 @@ char* ExtractOptions(int numArgs, char** args)
 }
 
 
+/**
+ * @name ExtractFileName
+ * @param numArgs - number of array elements in 'args'
+ * @param args - array of strings for each argument delimiterized by spaces 
+ * 
+ * Collects and returns, as a string, the file name in 'args'. 
+ * A file name is represetned as the first occurance of a string containing a perion '.'.
+ *
+ */
 char* ExtractFileName(int numArgs, char** args)
 {
 	#ifdef DBUG
@@ -198,7 +248,7 @@ char* ExtractFileName(int numArgs, char** args)
 
 
     char* fileName = NULL;
-    int found = FALSE;
+    int found = FALSE; //flag for finding first occurance of period '.'
 
     for (int i = 0; (i < numArgs) && (found == FALSE); ++i) {
     	
@@ -225,6 +275,15 @@ char* ExtractFileName(int numArgs, char** args)
 }
 
 
+/**
+ * @name ExtractOptionalAuthorName
+ * @param numArgs - number of array elements in 'args'
+ * @param args - array of strings for each argument delimiterized by spaces 
+ * 
+ * Collects and returns, as a string, any optional overloaded author name found. 
+ * Optional overloaded author names are a concatination of all strings occuring after the file name.
+ *
+ */
 char* ExtractOptionalAuthorName(int numArgs, char** args)
 {
 	#ifdef DBUG
@@ -232,8 +291,8 @@ char* ExtractOptionalAuthorName(int numArgs, char** args)
 	#endif
 
 
-    char* optionalAuthorName = "";
-    int found = FALSE;
+    char* optionalAuthorName = ""; //set as emtpy instead of NULL at start for convenience
+    int found = FALSE; //flag for finding first occurance of period '.'
 
     for (int i = 0; i < numArgs; ++i) {
     	
@@ -241,6 +300,7 @@ char* ExtractOptionalAuthorName(int numArgs, char** args)
     	printf("mm:: ExtractOptionalAuthorName: Checking for file name in: '%s'...\n", args[i]);
 	    #endif
 
+    	//first find argument containing the period, because author name is all arguments occurang after it.
         if( (strchr(args[i], '.') != NULL) && (found == FALSE) ) {
         	found = TRUE;
            
@@ -249,7 +309,7 @@ char* ExtractOptionalAuthorName(int numArgs, char** args)
             #endif
         } else if ( (found == TRUE) && (i <= numArgs) ) {
         	optionalAuthorName = concat(optionalAuthorName, args[i]);
-        	optionalAuthorName = concat(optionalAuthorName, " "); //for nicer spacing of overloaded author name
+        	optionalAuthorName = concat(optionalAuthorName, " "); //for nicer spacing in overloaded author name
 
 	        #ifdef DBUG
         	printf("mm:: ExtractOptionalAuthorName: Concating author name to: '%s'\n", optionalAuthorName);
@@ -258,7 +318,7 @@ char* ExtractOptionalAuthorName(int numArgs, char** args)
     }
 
 
-    //if no optional Author name was found, return NULL not an empty string
+    //if no optional Author name was found, return NULL
     if ( strcmp(optionalAuthorName,"") == 0 ) {
     	optionalAuthorName = NULL;
     }
@@ -272,6 +332,14 @@ char* ExtractOptionalAuthorName(int numArgs, char** args)
 }
 
 
+/**
+ * @name CheckSupportedMain
+ * @param op - single character representing the user requested language to make a main for
+ * 
+ * Checks that the language requested to make is a supported one. 
+ * A language is supported if the characters occuring after the perion '.' in the file name are known.
+ *
+ */
 int CheckSupportedMain(char* op)
 {
 	#ifdef DBUG
@@ -281,6 +349,7 @@ int CheckSupportedMain(char* op)
 
 	int optionID = INVALID;
 
+	//supported file extentions
 	if( strcmp(op, "c") == 0 ) {
 		optionID = C;
 	} else if ( strcmp(op, "c++") == 0 || strcmp(op, "cpp") == 0 ) {
@@ -300,21 +369,37 @@ int CheckSupportedMain(char* op)
 }
 
 
-char* ExtractMainType(char* text)
+/**
+ * @name ExtractMainType
+ * @param fileName - full name of file including extention
+ * 
+ * parses requested file name and extracts the extention at the end. 
+ * The extention is all characters occuring after the perion '.' in the file name.
+ *
+ */
+char* ExtractMainType(char* fileName)
 {
-	char* extractedOption = NULL;
-	extractedOption = strstr(text, ".");
+	char* extractedMainType = NULL;
+	extractedMainType = strstr(fileName, ".");
 
 
 	#ifdef DBUG
-	printf("mm:: ExtractMainType: Given: '%s', Extracted: '%s'\n", text, extractedOption+1);
+	printf("mm:: ExtractMainType: Given: '%s', Extracted: '%s'\n", fileName, extractedMainType+1);
 	#endif
 
 
-	return (extractedOption+1);
+	return (extractedMainType+1);
 }
 
 
+/**
+ * @name concat
+ * @param s1 - first string, occurs first after concatination
+ * @param s2 - second string, is concatinated to the end of s2
+ * 
+ * concatinates the strings s1, s2 in the order s1s2
+ *
+ */
 char* concat(char *s1, char *s2)
 {
     char *result = malloc(strlen(s1)+strlen(s2)+1); //+1 for the zero-terminator
@@ -326,6 +411,13 @@ char* concat(char *s1, char *s2)
 }
 
 
+/**
+ * @name DisplayUsage
+ * @param dialogue - optional text to be displayed to overload default usage display text
+ * 
+ * convenience method to display makemain usage info
+ *
+ */
 void DisplayUsage(char* dialogue)
 {
 	if(dialogue == NULL) {

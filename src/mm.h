@@ -28,7 +28,6 @@ enum TRUTH_VALUE {TRUE=0, FALSE=1};
 
 //prototypes
 int CreateMain(int fileType, char* fileName, char* authorName);
-//void SetOptions(int numArgs, char** args);
 int CheckSupportedMain(char* op);
 char* ExtractMainType(char* text);
 void DisplayUsage(char* dialogue);
