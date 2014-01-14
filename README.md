@@ -4,7 +4,7 @@ mm -- (makemain) Builds a quick main in C, C++, Python, or Java
 
 
 # SYNOPSIS
-./mm [-avhb] [fileName] [author]
+./mm [-vhb] [fileName] [author]
 
 
 # DESCRIPTION
@@ -15,7 +15,6 @@ You can also set a permanent author name so when mm creates a file it will alrea
 Various options are available to change the output including:
 
 ```
-	-a, --author  : AUTHOR  : Override the default author to another of your choice as the last argument.
 	-v, --verbose : VERBOSE : UNSUPPORTED - Prints information regarding file creation details.
 	-h, --header  : HEADER  : UNSUPPORTED - Create a header file with the same name by default.
 	-b, --basic   : BASIC   : UNSUPPORTED - Remove the Author and Time stamp from the main.
@@ -29,17 +28,13 @@ On OS X and Linux:
 ```
 	git clone https://github.com/CSEmbree/makemain.git
 	cd ~/<clone_path>/makemain
-	sourse setup.sh
-	make install
+	sudo make install
 ```
 
-Optionally, the `sourse setup.sh` can be skipped as it just sets an Envrionment Variable for the name of the default author. Skipping this step means a palceholder is put in for author names for default mains. This behavior also can be overridden by use of the `-a, --author` option when running a file. For example:
+The user will be prompted for a permanent author name but this can be skipped. To add a permanent author later can be done with either a fresh `sudo make install` or by just running the script `sudo sh setup.sh`. Essentially, `makefile` compiles makemain and `setup.sh` creates a wrapper script called `mm` (placed in `/usr/local/bin/` - hence the sudo) that calls makemain whenever the user wants to run mm. This level of indirection allows us to setup preferences like a permanent author name.
 
-```
-./mm -a hello.c steven
-```
+Therefore, the script can simply be run after making the executable the first time to update the permanent author name.
 
-will create a plain main file in C called `hello.c` with the author name `steven`. NOTE: The option `-a` is limited to one string for now (no spaces), this will be changed later.
 
 
 # Running
@@ -71,11 +66,11 @@ C
 	./mm hello.c
 ```
 
-C++
-```
-	./mm hello.c++
-	OR
-	./mm hello.cpp
+C++ 
+```     
+	./mm hello.c++     
+	OR     
+	./mm hello.cpp 
 ```
 
 PYTHON
@@ -88,16 +83,24 @@ JAVA
 	./mm hello.java	
 ```
 
+# Update Permanent Author
+
+As mentioned in the Building section, a new permanent author can be set by running the `setup.sh` script by:
+```
+	sudo sh setup.sh
+```
+
 
 # Notes
 
 makemain was written in C for practice and lower level control. Tested in Bash on Mac OS X and Ubuntu.
 
-- [ ] Remove `-a` and make it so any words after the file name are the overwritten author
+- [X] Remove `-a` and make it so any words after the file name are the overwritten author
 - [ ] Finish including verbose implimentation (-v, --verbose)
 - [ ] Include support for header options? (-h, --header)
 - [ ] Add templates for other languages
-- [ ] Improve setup experience
+- [X] Improve setup experience - ongoing
 - [ ] Allow removal of author name and timestamp with option? (-b --basic)
 - [ ] Account for errors when missing input that is expected
-- [ ] Make the executable `mm` runable from anywhere as part of the `make install`
+- [X] Make the executable `mm` runable from anywhere as part of the `make install`
+- [ ] Remove make clean errors when there are no files to delete
