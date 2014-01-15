@@ -31,17 +31,20 @@ static char* DEFAULT_AUTHOR_NAME = "<DEFAULT>"; //default author for debugging, 
  *
  */
 int main(int argc, char **argv) {
-	int mainType = INVALID;
 	char *fileName = DEFAULT_FILE_NAME;
 	char *authorName = DEFAULT_AUTHOR_NAME;
 	char *permAuthorName = ""; //none assumed at start
+
+	int totResult = TRUE; //result of the whole make creation. Any error along the way makes this FALSE.
 	
 
-	if (verboseTextFlag) {
-	    printf("mm:: Received the '%d' arguments: ", argc);
-	    for (int i = 0; i < argc; ++i) printf("%s ", argv[i]);
-	    printf("\n");
-	}
+ 
+	//debug prints to visually confirm incomming argument input order
+	#ifdef DBUG
+	printf("mm:: Received the '%d' arguments: ", argc);
+	for (int i = 0; i < argc; ++i) printf("%s ", argv[i]);
+	printf("\n");
+	#endif
 
 
 	//update author name if it has already been set permanently
@@ -80,24 +83,27 @@ int main(int argc, char **argv) {
 		}
 		
 
-		//ensure only a supported language was requested
-		mainType = CheckSupportedMain(ExtractMainType(fileName));
-
-
 		//create main only if a supported language was requested
-		if( mainType != INVALID ) {
-			CreateMain(mainType, fileName, authorName);
-		} else {
+		int creationResult = CreateMain(fileName, authorName);
+
+		if (creationResult == INVALID) {
 			printf("mm:: Main: ERROR: Main Type of '%s' not supported.\n", ExtractMainType(fileName));
-			DisplayUsage(NULL);
-			return -1;
+			totResult = FALSE; //note to user the creation was unsuccesful
 		}
+
+
+		//display creation results if requested by user
+		if (verboseTextFlag == TRUE) {
+			DisplayVerbose(fileName, authorName);
+		}
+
 	} else { 
 		//if minimum arguments to run is not met, display usage info
-		DisplayUsage(NULL); 
+		DisplayUsage(); 
+		totResult = FALSE; //note to user the creation was unsuccesful
 	}
 
-	return 0;
+	return totResult;
 }
 
 
@@ -105,38 +111,54 @@ int main(int argc, char **argv) {
 
 
 /**
- * @name SetOptions
- * @param options - extracted options from origional user input, is in the form '-vba'.
+ * @name CreateMain
+ * @param fileName - whole file name requested by user, ex: 'hello.c'
+ * @param authorName - author name for main file
  * 
- * sets internal flags to alter behavior depending on what options the user has selected.
- * options are all optional characters that occured after a dash '-'.
+ * Creates main based on the main file type requested with a provided author.
  *
  */
-int CreateMain(int fileType, char* fileName, char* authorName) 
+int CreateMain(char* fileName, char* authorName) 
 {
-	int creationResult = -1;
+	int creationResult = INVALID;
 
 	#ifdef DBUG
 	printf("mm:: CreateMain: Creating main type: '%d'...\n", fileType);
 	#endif
 
 
-	switch(fileType) {
-		case C:
-		    creationResult = MainInC(fileName, authorName); 
-		    break;
-		case CPP:
-		    creationResult = MainInCPP(fileName, authorName); 
-		    break;
-		case PYTHON:
-		    creationResult = MainInPython(fileName, authorName);
-		    break;
-		case JAVA:
-		    creationResult = MainInJava(fileName, authorName);
-		    break;
-		default: 
-		    printf("mm:: CreateMain: ERROR: An unsupported main creation was encountered!\n");
-		    break; //do nothing
+	//retrive file extention ID for quick identification of which main to make
+	char* fileExtention = ExtractMainType(fileName);
+
+	int fileExtentionID = CheckSupportedMain(fileExtention);
+
+
+	if ( fileExtentionID != INVALID ) {
+	    switch (fileExtentionID) {
+		    case C:
+		        creationResult = MainInC(fileName, authorName); 
+		        break;
+		    case CPP:
+		        creationResult = MainInCPP(fileName, authorName); 
+		        break;
+		    case PYTHON:
+		        creationResult = MainInPython(fileName, authorName);
+		        break;
+		    case JAVA:
+		        creationResult = MainInJava(fileName, authorName);
+		        break;
+		    default: 
+		        creationResult = INVALID; //unsupported fileExtention encountered, throw an error.
+		        break; //do nothing
+		}
+	} else {
+	    creationResult = INVALID; //unsupported fileExtention encountered, throw an error.
+	}
+
+
+	//let user know if they have provided an unsupported language file extention
+	if (creationResult == INVALID) {
+		printf("mm:: CreateMain: ERROR: Encountered unsupported language type: '%s'\n", fileExtention);
 	}
 
 
@@ -152,8 +174,8 @@ int CreateMain(int fileType, char* fileName, char* authorName)
  * @name SetOptions
  * @param options - extracted options from origional user input, is in the form '-vba'.
  * 
- * sets internal flags to alter behavior depending on what options the user has selected.
- * options are all optional characters that occured after a dash '-'.
+ * Sets internal flags to alter behavior depending on what options the user has selected.
+ * Options are all characters that occured after a dash '-'.
  *
  */
 void SetOptions(char* options)
@@ -166,13 +188,19 @@ void SetOptions(char* options)
     //TODO - header flag creates a header with the same file name as the main
     if( strchr(options, 'h') != NULL ) {
         makeHeader = TRUE;
-        printf("mm:: SetOptions: HEADER FLAG SET! - TODO -NOT HANDLED YET\n");       
+        
+        #ifdef DBUG
+        printf("mm:: SetOptions: HEADER FLAG SET! - TODO - NOT HANDLED YET\n");       
+        #endif
     }
 
     //TODO - reports the result of makemain at the end of creation for user
     if( strchr(options, 'v') != NULL ) {
         verboseTextFlag = TRUE;
+        
+        #ifdef DBUG
         printf("mm:: SetOptions: VERBOSE TEXT FLAG SET!\n");       
+        #endif
     }
 
 
@@ -373,7 +401,7 @@ int CheckSupportedMain(char* op)
  * @name ExtractMainType
  * @param fileName - full name of file including extention
  * 
- * parses requested file name and extracts the extention at the end. 
+ * Parses requested file name and extracts the extention at the end. 
  * The extention is all characters occuring after the perion '.' in the file name.
  *
  */
@@ -397,7 +425,7 @@ char* ExtractMainType(char* fileName)
  * @param s1 - first string, occurs first after concatination
  * @param s2 - second string, is concatinated to the end of s2
  * 
- * concatinates the strings s1, s2 in the order s1s2
+ * Concatinates the strings s1, s2 in the order s1s2.
  *
  */
 char* concat(char *s1, char *s2)
@@ -413,18 +441,29 @@ char* concat(char *s1, char *s2)
 
 /**
  * @name DisplayUsage
- * @param dialogue - optional text to be displayed to overload default usage display text
  * 
- * convenience method to display makemain usage info
+ * Convenience method to display makemain usage info.
  *
  */
-void DisplayUsage(char* dialogue)
+void DisplayUsage()
 {
-	if(dialogue == NULL) {
-		printf("mm (makemain):: generates a plain main file for either C (*.c), CPP (*.{c++,cpp}), Python (*.py).\n\n");
-	} else {
-		printf("%s\n", dialogue);
-	}
+	printf("mm:: Generates a plain main file for either C (*.c), CPP (*.{c++,cpp}), Python (*.py).\n\n");
+
+	return;
+}
+
+
+/**
+ * @name DisplayVerbose
+ * @param file - optional text to be displayed to overload default usage display text
+ * @param author - optional text to be displayed to overload default usage display text
+ * 
+ * Display file creation name and author name to user.
+ *
+ */
+void DisplayVerbose(char* file, char* author)
+{
+	printf("mm:: Created '%s' with author '%s'.\n", file, author);
 
 	return;
 }

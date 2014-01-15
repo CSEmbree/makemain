@@ -22,21 +22,24 @@
 
 
 //enum RETURN_OPTIONS {SUCCESS, FAIL}; 
-enum MAIN_OPTIONS {INVALID, C, CPP, PYTHON, JAVA};
+enum MAIN_OPTIONS {INVALID = -1, C, CPP, PYTHON, JAVA};
 enum TRUTH_VALUE {TRUE=0, FALSE=1};
 
 
 //prototypes
-int CreateMain(int fileType, char* fileName, char* authorName);
+int CreateMain(char* fileName, char* authorName);
 int CheckSupportedMain(char* op);
-char* ExtractMainType(char* text);
-void DisplayUsage(char* dialogue);
 
+char* ExtractMainType(char* text);
 char* ExtractOptions(int numArgs, char** args);
-void SetOptions(char* options);
 char* ExtractFileName(int numArgs, char** args);
 char* ExtractOptionalAuthorName(int numArgs, char** args);
+void SetOptions(char* options);
+
 char* concat(char *s1, char *s2);
+
+void DisplayUsage();
+void DisplayVerbose(char* file, char* author);
 
 
 
