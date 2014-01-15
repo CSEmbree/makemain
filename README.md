@@ -4,11 +4,11 @@ mm -- (makemain) Builds a quick main in C, C++, Python, or Java
 
 
 # SYNOPSIS
-./mm [-vhb] [fileName] [author]
+./mm [-vhb] [<fileName>.<extention>] [author]
 
 
 # DESCRIPTION
-makemain (mm) is a bit of code for quickly generating a basic 'main' file in C, C++, Python, and Java. Basically, I got tired of starting from scratch from a blank page to code, so I made something to give me a quick starting place.
+Makemain (mm) is a bit of code for quickly generating a basic 'main' file in C, C++, Python, and Java. Basically, I got tired of starting from scratch from a blank page to code, so I made something to give me a quick starting place.
 
 You can also set a permanent author name so when mm creates a file it will already be labled by that author and timestamped.
 
@@ -34,10 +34,10 @@ On OS X and Linux:
 The user will be prompted for a permanent author name but this can be skipped. To add a permanent author later can be done with either a fresh `sudo make install` or by just running the script `sudo sh setup.sh`. 
 
 
-Essentially, `makefile` compiles makemain and `setup.sh` creates a wrapper script called `mm` (placed in `/usr/local/bin/` - hence the sudo) that calls makemain whenever the user wants to run mm. This level of indirection allows us to setup preferences like a permanent author name.
+Basically, `makefile` compiles makemain and `setup.sh` creates a wrapper script called `mm` (placed in `/usr/local/bin/` - hence the sudo) that calls makemain whenever the user wants to run mm. This level of indirection allows us to setup preferences like a permanent author name.
 
 
-An optional `sudo make debug` will compile makemain and prints our what is going on under the hood for testing.
+An optional `sudo make debug` will compile makemain for testing such that it prints out what is going on under the hood when creating a file.
 
 
 
@@ -101,8 +101,8 @@ makemain was written in C for practice and lower level control. Tested in Bash o
 - [X] Remove `-a` and make it so any words after the file name are the overwritten author
 - [X] Finish including verbose implimentation (-v, --verbose)
 - [ ] Include support for header options? (-h, --header)
-- [ ] Add templates for other languages
-- [X] Improve setup experience - ongoing
+- [ ] Add templates for other languages - ONGOING
+- [X] Improve setup experience - ONGOING
 - [ ] Allow removal of author name and timestamp with option? (-b --basic)
 - [ ] Account for errors when missing input that is expected
 - [X] Make the executable `mm` runable from anywhere as part of the `make install`
