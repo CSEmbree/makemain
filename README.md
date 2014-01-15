@@ -15,7 +15,7 @@ You can also set a permanent author name so when mm creates a file it will alrea
 Various options are available to change the output including:
 
 ```
-	-v, --verbose : VERBOSE : UNSUPPORTED - Prints information regarding file creation details.
+	-v, --verbose : VERBOSE : Prints information regarding file creation details.
 	-h, --header  : HEADER  : UNSUPPORTED - Create a header file with the same name by default.
 	-b, --basic   : BASIC   : UNSUPPORTED - Remove the Author and Time stamp from the main.
 ```
@@ -44,13 +44,11 @@ An optional `sudo make debug` will compile makemain and prints our what is going
 # Running
 
 To run makemain, execute a command with the format:
-
 ```
 	mm <fileName>.<extension> [author]
 ```
 
 For example:
-	
 ```
 	mm helloworld.c
 ```
@@ -65,9 +63,10 @@ Or to overload the default author name:
 
 On OSX and Linux:
 ```
+    cd ~/<clone_path>/makemain
 	sudo make clean
 ```
-Removes all compiled and generated files taking the state back to when it was origionally cloned.
+Removes all compiled and generated files which takes the file states back to when it was origionally cloned.
 
 
 
@@ -88,8 +87,9 @@ C, C++, Python and Java in the respective forms:
 
 # Update Permanent Author
 
-As mentioned in the Building section, a new permanent author can be set by running the `setup.sh` script by:
+A new author can be set by running the `setup.sh` script by itself (no need for a new `sudo make install`):
 ```
+    cd ~/<clone_path>/makemain
 	sudo sh setup.sh
 ```
 
@@ -99,7 +99,7 @@ As mentioned in the Building section, a new permanent author can be set by runni
 makemain was written in C for practice and lower level control. Tested in Bash on Mac OS X and Ubuntu.
 
 - [X] Remove `-a` and make it so any words after the file name are the overwritten author
-- [ ] Finish including verbose implimentation (-v, --verbose)
+- [X] Finish including verbose implimentation (-v, --verbose)
 - [ ] Include support for header options? (-h, --header)
 - [ ] Add templates for other languages
 - [X] Improve setup experience - ongoing
