@@ -1,0 +1,1 @@
+#This READEME is here to ensure that the makemain/bin folder is placed into the gitrepo for storing the executable after 'sudo make install'. Nothing is in this folder by default (Except this README).
