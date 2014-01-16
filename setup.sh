@@ -26,16 +26,19 @@ if [ "$ans" == "Y" ]; then
     echo "mm:: Please enter a permanent author name: "
     read authorName
     echo "mm:: Author name set to: '$authorName'."
-    echo "export MM_AUTHOR=\"${authorName}\" " >> mm
+    echo "export MM_PERM_AUTHOR=\"${authorName}\" " >> mm
 else
 	#incorrect response will be assumed as a negative answer. Report it to user for clairity.
 	echo "mm:: Your answer: '$ans'."
 	echo "mm:: No permanent author name option selected!"
 fi
 
+#always export the template file location path
+echo "export MM_TEMP_PATH=\"$(pwd)/templates\" " >> mm
+
 #always export the executable path location for running makemain
-echo "export MM_PATH=\"$(pwd)/bin/makemain\" " >> mm
-echo "exec \${MM_PATH} \$ARGS" >> mm
+echo "export MM_EXEC_PATH=\"$(pwd)/bin/makemain\" " >> mm
+echo "exec \${MM_EXEC_PATH} \$ARGS" >> mm
 
 
 #move the wrapper script to a standard execution path to allow makemain to be run from anywhere
