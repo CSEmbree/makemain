@@ -4,8 +4,8 @@
  *
  */
 
-#ifndef RETURN_RESULT_H
-#define RETURN_RESULT_H
+#ifndef MAKE_MAIN_H
+#define MAKE_MAIN_H
 
 
 #include <stdlib.h>
@@ -15,6 +15,8 @@
 
 
 //#include "returnResult.h"
+#include "envVars.h"
+
 #include "main_c.c"
 #include "main_cpp.c"
 #include "main_java.c"
@@ -36,7 +38,7 @@ char* ExtractFileName(int numArgs, char** args);
 char* ExtractOptionalAuthorName(int numArgs, char** args);
 void SetOptions(char* options);
 
-char* concat(char *s1, char *s2);
+//char* concat(char *s1, char *s2);
 
 void DisplayUsage();
 void DisplayVerbose(char* file, char* author);

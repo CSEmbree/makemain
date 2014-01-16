@@ -15,11 +15,14 @@ int makeHeader = FALSE;
 int verboseTextFlag = FALSE;
 
 
-static char* ENV_VAR_PERM_AUTHOR = "MM_AUTHOR"; //optional ENVAR containing permanent author name
 static char* DEFAULT_FILE_NAME   = "default.c"; //default filename for debugging, should never show
 static char* DEFAULT_AUTHOR_NAME = "<DEFAULT>"; //default author for debugging, should never show
 
-
+/*
+static char* ENV_VAR_PERM_AUTHOR = "MM_PERM_AUTHOR"; //optional ENVAR containing permanent author name
+//static char* ENV_VAR_EXEC_PATH = "MM_EXEC_PATH"; //ENVAR containing path to executable install location
+static char* ENV_VAR_TEMP_PATH = "MM_TEMP_PATH"; //ENVAR containing path to templates
+*/
 
 /**
  * @name main
@@ -123,29 +126,33 @@ int CreateMain(char* fileName, char* authorName)
 	int creationResult = INVALID;
 
 	#ifdef DBUG
-	printf("mm:: CreateMain: Creating main type: '%d'...\n", fileType);
+	printf("mm:: CreateMain: Creating main type from: '%s'...\n", fileName);
 	#endif
 
 
 	//retrive file extention ID for quick identification of which main to make
 	char* fileExtention = ExtractMainType(fileName);
-
 	int fileExtentionID = CheckSupportedMain(fileExtention);
+
+
+	char* templatePath = getenv(ENV_VAR_TEMP_PATH);
+    //templatePath = concat(templatePath, "template_c.c")
+    
 
 
 	if ( fileExtentionID != INVALID ) {
 	    switch (fileExtentionID) {
 		    case C:
-		        creationResult = MainInC(fileName, authorName); 
+		        creationResult = MainInC(fileName, authorName, templatePath); 
 		        break;
 		    case CPP:
-		        creationResult = MainInCPP(fileName, authorName); 
+		        creationResult = MainInCPP(fileName, authorName, templatePath); 
 		        break;
 		    case PYTHON:
-		        creationResult = MainInPython(fileName, authorName);
+		        creationResult = MainInPython(fileName, authorName, templatePath);
 		        break;
 		    case JAVA:
-		        creationResult = MainInJava(fileName, authorName);
+		        creationResult = MainInJava(fileName, authorName, templatePath);
 		        break;
 		    default: 
 		        creationResult = INVALID; //unsupported fileExtention encountered, throw an error.
@@ -421,25 +428,6 @@ char* ExtractMainType(char* fileName)
 
 
 /**
- * @name concat
- * @param s1 - first string, occurs first after concatination
- * @param s2 - second string, is concatinated to the end of s2
- * 
- * Concatinates the strings s1, s2 in the order s1s2.
- *
- */
-char* concat(char *s1, char *s2)
-{
-    char *result = malloc(strlen(s1)+strlen(s2)+1); //+1 for the zero-terminator
-    //TODO - check for errors in malloc
-    strcpy(result, s1);
-    strcat(result, s2);
-    
-    return result;
-}
-
-
-/**
  * @name DisplayUsage
  * 
  * Convenience method to display makemain usage info.
@@ -467,3 +455,24 @@ void DisplayVerbose(char* file, char* author)
 
 	return;
 }
+
+
+/**
+ * @name concat
+ * @param s1 - first string, occurs first after concatination
+ * @param s2 - second string, is concatinated to the end of s2
+ * 
+ * Concatinates the strings s1, s2 in the order s1s2.
+ *
+ */
+ /*
+char* concat(char *s1, char *s2)
+{
+    char *result = malloc(strlen(s1)+strlen(s2)+1); //+1 for the zero-terminator
+    //TODO - check for errors in malloc
+    strcpy(result, s1);
+    strcat(result, s2);
+    
+    return result;
+}
+*/

@@ -12,7 +12,7 @@
 enum RETURN_OPTIONS {SUCCESS, FAIL}; 
 
 
-int MainInCPP(char* fileName, char* authorName);
+int MainInCPP(char* fileName, char* authorName, char* templatePath);
 
 
 #endif

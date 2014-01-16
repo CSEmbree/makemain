@@ -7,12 +7,15 @@
 //#include "main_python.h"
 
 
-int MainInPython(char* fileName, char* authorName);
+int MainInPython(char* fileName, char* authorName, char* templatePath);
 
 
-int MainInPython(char* fileName, char* authorName)
+int MainInPython(char* fileName, char* authorName, char* templatePath)
 {
-	FILE* sourceFile = fopen("templates/template_python.py", "r");
+    char* sourceTemplate = concat(templatePath, "/template_python.py");
+
+
+    FILE* sourceFile = fopen(sourceTemplate, "r");
     FILE* destFile = fopen(fileName, "w");
 
 	//make sure files can be opened

@@ -4,15 +4,15 @@
  *
  */
 
-#ifndef RETURN_RESULT_H
-#define RETURN_RESULT_H
+#ifndef MAIN_PYTHON_H
+#define MAIN_PYTHON_H
 
 
 //#include "returnResult.h"
 enum RETURN_OPTIONS {SUCCESS, FAIL}; 
 
 
-int MainInPython(char* fileName, char* authorName);
+int MainInPython(char* fileName, char* authorName, char* templatePath);
 
 
 #endif

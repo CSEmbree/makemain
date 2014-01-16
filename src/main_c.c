@@ -7,12 +7,15 @@
 //#include "main_c.h"
 
 
-int MainInC(char* fileName, char* authorName);
+int MainInC(char* fileName, char* authorName, char* templatePath);
 
 
-int MainInC(char* fileName, char* authorName)
+int MainInC(char* fileName, char* authorName, char* templatePath)
 {
-	FILE* sourceFile = fopen("templates/template_c.c", "r");
+    char* sourceTemplate = concat(templatePath, "/template_c.c");
+
+
+	FILE* sourceFile = fopen(sourceTemplate, "r");
     FILE* destFile = fopen(fileName, "w");
 
 	//make sure files can be opened

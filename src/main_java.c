@@ -7,12 +7,15 @@
 //#include "main_java.h"
  
 
-int MainInJava(char* fileName, char* authorName);
+int MainInJava(char* fileName, char* authorName, char* templatePath);
 
 
-int MainInJava(char* fileName, char* authorName)
+int MainInJava(char* fileName, char* authorName, char* templatePath)
 {
-	FILE* sourceFile = fopen("templates/template_java.java", "r");
+    char* sourceTemplate = concat(templatePath, "/template_java.java");
+
+
+    FILE* sourceFile = fopen(sourceTemplate, "r");
     FILE* destFile = fopen(fileName, "w");
 
 	//make sure files can be opened
