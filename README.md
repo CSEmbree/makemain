@@ -63,7 +63,7 @@ Or to overload the default author name:
 
 On OSX and Linux:
 ```
-    cd ~/<clone_path>/makemain
+    cd ~/<makemain_path>/makemain
 	sudo make clean
 ```
 Removes all compiled and generated files which takes the file states back to when it was origionally cloned.
@@ -89,7 +89,7 @@ C, C++, Python and Java in the respective forms:
 
 A new author can be set by running the `setup.sh` script by itself (no need for a new `sudo make install`):
 ```
-    cd ~/<clone_path>/makemain
+    cd ~/<makemain_path>/makemain
 	sudo sh setup.sh
 ```
 
@@ -105,5 +105,6 @@ makemain was written in C for practice and lower level control. Tested in Bash o
 - [X] Improve setup experience - ONGOING
 - [ ] Allow removal of author name and timestamp with option? (-b --basic)
 - [ ] Account for errors when missing input that is expected
+- [X] Improve file and author info extraction
 - [X] Make the executable `mm` runable from anywhere as part of the `make install`
 - [ ] Remove make clean errors when there are no files to delete
