@@ -18,11 +18,6 @@ int verboseTextFlag = FALSE;
 //static char* DEFAULT_FILE_NAME = "default.c"; //default filename for debugging, should never show
 static char* DEFAULT_AUTHOR_NAME = "<DEFAULT>"; //default author for debugging, should never show
 
-/*
-static char* ENV_VAR_PERM_AUTHOR = "MM_PERM_AUTHOR"; //optional ENVAR containing permanent author name
-//static char* ENV_VAR_EXEC_PATH = "MM_EXEC_PATH"; //ENVAR containing path to executable install location
-static char* ENV_VAR_TEMP_PATH = "MM_TEMP_PATH"; //ENVAR containing path to templates
-*/
 
 /**
  * @name main
@@ -142,11 +137,8 @@ int CreateMain(FILE_INFO *fInfo)
 	char* fileExtention = ExtractMainType(fInfo->fileName);
 	int fileExtentionID = CheckSupportedMain(fileExtention);
 
-
 	char* templatePath = getenv(ENV_VAR_TEMP_PATH);
-    //templatePath = concat(templatePath, "template_c.c")
     
-
 
 	if ( fileExtentionID != INVALID ) {
 	    switch (fileExtentionID) {
@@ -271,107 +263,6 @@ char* ExtractOptions(int numArgs, char** args)
 	#endif
 
     return optionsFound;
-}
-
-
-/**
- * @name ExtractFileName
- * @param numArgs - number of array elements in 'args'
- * @param args - array of strings for each argument delimiterized by spaces 
- * 
- * Collects and returns, as a string, the file name in 'args'. 
- * A file name is represetned as the first occurance of a string containing a perion '.'.
- *
- */
-char* ExtractFileName(int numArgs, char** args)
-{
-	#ifdef DBUG
-    printf("mm:: ExtractFileName: Extracting file name...\n");
-	#endif
-
-
-    char* fileName = NULL;
-    int found = FALSE; //flag for finding first occurance of period '.'
-
-    for (int i = 0; (i < numArgs) && (found == FALSE); ++i) {
-    	
-    	#ifdef DBUG
-    	printf("mm:: ExtractFileName: Checking for options in: '%s'...\n", args[i]);
-	    #endif
-
-        if( strchr(args[i], '.') != NULL ) {
-            fileName = args[i]; //file name is the string with the first occurance of a '.' char
-            found = TRUE;
-
-	        #ifdef DBUG
-            printf("mm:: ExtractFileName: Found option(s)! File Name is: '%s'\n", fileName);
-            #endif
-        }
-    }
-
-
-	#ifdef DBUG    
-    printf("mm:: ExtractFileName: Extracted file name: '%s'.\n", fileName);
-	#endif
-
-    return fileName;
-}
-
-
-/**
- * @name ExtractOptionalAuthorName
- * @param numArgs - number of array elements in 'args'
- * @param args - array of strings for each argument delimiterized by spaces 
- * 
- * Collects and returns, as a string, any optional overloaded author name found. 
- * Optional overloaded author names are a concatination of all strings occuring after the file name.
- *
- */
-char* ExtractOptionalAuthorName(int numArgs, char** args)
-{
-	#ifdef DBUG
-    printf("mm:: ExtractOptionalAuthorName: Extracting optional author name...\n");
-	#endif
-
-
-    char* optionalAuthorName = ""; //set as emtpy instead of NULL at start for convenience
-    int found = FALSE; //flag for finding first occurance of period '.'
-
-    for (int i = 0; i < numArgs; ++i) {
-    	
-    	#ifdef DBUG
-    	printf("mm:: ExtractOptionalAuthorName: Checking for file name in: '%s'...\n", args[i]);
-	    #endif
-
-    	//first find argument containing the period, because author name is all arguments occurang after it.
-        if( (strchr(args[i], '.') != NULL) && (found == FALSE) ) {
-        	found = TRUE;
-           
-	        #ifdef DBUG
-            printf("mm:: ExtractOptionalAuthorName: Found file name!\n");
-            #endif
-        } else if ( (found == TRUE) && (i <= numArgs) ) {
-        	optionalAuthorName = concat(optionalAuthorName, args[i]);
-        	optionalAuthorName = concat(optionalAuthorName, " "); //for nicer spacing in overloaded author name
-
-	        #ifdef DBUG
-        	printf("mm:: ExtractOptionalAuthorName: Concating author name to: '%s'\n", optionalAuthorName);
-            #endif
-        }
-    }
-
-
-    //if no optional Author name was found, return NULL
-    if ( strcmp(optionalAuthorName,"") == 0 ) {
-    	optionalAuthorName = NULL;
-    }
-    
-
-    #ifdef DBUG
-    printf("mm:: ExtractOptionalAuthorName: Extracted author name: '%s'.\n", optionalAuthorName);
-	#endif
-
-    return optionalAuthorName;
 }
 
 
@@ -501,7 +392,6 @@ FILE_INFO *ExtractUserDetails(int numArgs, char** args)
 }
 
 
-
 /**
  * @name DisplayUsage
  * 
@@ -518,9 +408,8 @@ void DisplayUsage()
 
 /**
  * @name DisplayVerbose
- * @param file - optional text to be displayed to overload default usage display text
- * @param author - optional text to be displayed to overload default usage display text
- * 
+ * @param fInfo - struct containing author and file name
+ *
  * Display file creation name and author name to user.
  *
  */
@@ -536,6 +425,13 @@ void DisplayVerbose(FILE_INFO *fInfo)
 }
 
 
+/**
+ * @name DisplayFileInfo
+ * @param fInfo - struct containing author and file name
+ *
+ * Conveient way to display FILE_INFO struct contents
+ *
+ */
 void DisplayFileInfo(FILE_INFO *fInfo)
 {
 	if(fInfo != NULL) {
@@ -547,23 +443,3 @@ void DisplayFileInfo(FILE_INFO *fInfo)
 	return;
 }
 
-
-/**
- * @name concat
- * @param s1 - first string, occurs first after concatination
- * @param s2 - second string, is concatinated to the end of s2
- * 
- * Concatinates the strings s1, s2 in the order s1s2.
- *
- */
- /*
-char* concat(char *s1, char *s2)
-{
-    char *result = malloc(strlen(s1)+strlen(s2)+1); //+1 for the zero-terminator
-    //TODO - check for errors in malloc
-    strcpy(result, s1);
-    strcat(result, s2);
-    
-    return result;
-}
-*/
