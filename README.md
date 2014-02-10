@@ -4,7 +4,7 @@ mm -- (makemain) Builds a quick main in C, C++, Python, or Java
 
 
 # SYNOPSIS
-./mm [-vhb] <fileName>.<extention> [author]
+./mm [-vhb] fileName.extension [author]
 
 
 
