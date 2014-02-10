@@ -27,21 +27,33 @@
 enum MAIN_OPTIONS {INVALID = -1, C, CPP, PYTHON, JAVA};
 enum TRUTH_VALUE {TRUE=0, FALSE=1};
 
+typedef struct file_info
+{
+	char* fileName;
+	char* authorName;
+	char* fileExtension;
+	int fileExtensionID;
+	char* options;
+} FILE_INFO;
+
 
 //prototypes
-int CreateMain(char* fileName, char* authorName);
+int CreateMain(FILE_INFO *fInfo);
 int CheckSupportedMain(char* op);
 
 char* ExtractMainType(char* text);
 char* ExtractOptions(int numArgs, char** args);
 char* ExtractFileName(int numArgs, char** args);
 char* ExtractOptionalAuthorName(int numArgs, char** args);
+
+FILE_INFO* ExtractUserDetails(int numArgs, char** args);
+
 void SetOptions(char* options);
 
 //char* concat(char *s1, char *s2);
 
 void DisplayUsage();
-void DisplayVerbose(char* file, char* author);
+void DisplayVerbose(FILE_INFO* fInfo);
 
 
 

@@ -15,7 +15,7 @@ int makeHeader = FALSE;
 int verboseTextFlag = FALSE;
 
 
-static char* DEFAULT_FILE_NAME   = "default.c"; //default filename for debugging, should never show
+//static char* DEFAULT_FILE_NAME = "default.c"; //default filename for debugging, should never show
 static char* DEFAULT_AUTHOR_NAME = "<DEFAULT>"; //default author for debugging, should never show
 
 /*
@@ -34,13 +34,9 @@ static char* ENV_VAR_TEMP_PATH = "MM_TEMP_PATH"; //ENVAR containing path to temp
  *
  */
 int main(int argc, char **argv) {
-	char *fileName = DEFAULT_FILE_NAME;
-	char *authorName = DEFAULT_AUTHOR_NAME;
-	char *permAuthorName = ""; //none assumed at start
-
+	
 	int totResult = TRUE; //result of the whole make creation. Any error along the way makes this FALSE.
 	
-
  
 	//debug prints to visually confirm incomming argument input order
 	#ifdef DBUG
@@ -51,53 +47,66 @@ int main(int argc, char **argv) {
 
 
 	//update author name if it has already been set permanently
-	permAuthorName = getenv(ENV_VAR_PERM_AUTHOR);
-	if (permAuthorName != NULL) {
-		authorName = permAuthorName;
+	char* defaultAuthorName = getenv(ENV_VAR_PERM_AUTHOR);
+	
+	
+	if (defaultAuthorName != NULL) {
+		#ifdef DBUG
+		printf("mm:: Main: Author name found in ENVAR: '%s'.\n", defaultAuthorName);
+		#endif
+	} else {
+		//no ENVAR was found, use placeholder deafult
+		defaultAuthorName = DEFAULT_AUTHOR_NAME;
 
 		#ifdef DBUG
-		printf("mm:: Main: Author name found in ENVAR: '%s'\n", authorName);
-		#endif
+		printf("mm:: Main: Author name NOT found in ENVAR.\n");
+	    #endif
 	}
 
 
 	//insure minimum input requirement
 	if(argc>=2) {
 		
+		//get all the file info the user provided
+		FILE_INFO *fInfo = ExtractUserDetails(argc, argv);
+		#ifdef DBUG
+		DisplayFileInfo(fInfo);
+		#endif
+
+
 		//Set appropreate option flags to alter behavior
 		char *optionsFound = ExtractOptions(argc, argv);
 		if (optionsFound != NULL) {
 			SetOptions(optionsFound);
 		}
 
-		//extract file name that is passed as an argument to mm
-		fileName = ExtractFileName(argc, argv);
 
-
-		//arguments after filename are used as an overloaded author name. 
-		// This name overrides any default or permanent one
-		char *optionalAuthor = ExtractOptionalAuthorName(argc, argv);			
-		if (optionalAuthor != NULL) {
+		//arguments after filename are the overloaded author name and override any default
+		if (fInfo->authorName != NULL) {
 			#ifdef DBUG
-			printf("mm:: MAIN: Overrode author from '%s' to '%s'.\n", authorName, optionalAuthor);
+			printf("mm:: MAIN: Overrode author from '%s' to '%s'.\n", defaultAuthorName, fInfo->authorName);
 			#endif
-
-			authorName = optionalAuthor;
+		} else {
+			fInfo->authorName = defaultAuthorName;
 		}
 		
 
 		//create main only if a supported language was requested
-		int creationResult = CreateMain(fileName, authorName);
+		int creationResult = CreateMain(fInfo);
 
 		if (creationResult == INVALID) {
-			printf("mm:: Main: ERROR: Main Type of '%s' not supported.\n", ExtractMainType(fileName));
+			if(fInfo->fileName == NULL) {
+				printf("mm:: Main: ERROR: No file extension was provided in '%s'.\n", fInfo->fileName);
+			} else {
+				printf("mm:: Main: ERROR: Main Type of '%s' not supported.\n", ExtractMainType(fInfo->fileName));
+			}
 			totResult = FALSE; //note to user the creation was unsuccesful
 		}
 
 
 		//display creation results if requested by user
 		if (verboseTextFlag == TRUE) {
-			DisplayVerbose(fileName, authorName);
+			DisplayVerbose(fInfo);
 		}
 
 	} else { 
@@ -115,23 +124,22 @@ int main(int argc, char **argv) {
 
 /**
  * @name CreateMain
- * @param fileName - whole file name requested by user, ex: 'hello.c'
- * @param authorName - author name for main file
+ * @param fInfo - struct with file and author name
  * 
  * Creates main based on the main file type requested with a provided author.
  *
  */
-int CreateMain(char* fileName, char* authorName) 
+int CreateMain(FILE_INFO *fInfo) 
 {
 	int creationResult = INVALID;
 
 	#ifdef DBUG
-	printf("mm:: CreateMain: Creating main type from: '%s'...\n", fileName);
+	printf("mm:: CreateMain: Creating main type from: '%s'...\n", fInfo->fileName);
 	#endif
 
 
 	//retrive file extention ID for quick identification of which main to make
-	char* fileExtention = ExtractMainType(fileName);
+	char* fileExtention = ExtractMainType(fInfo->fileName);
 	int fileExtentionID = CheckSupportedMain(fileExtention);
 
 
@@ -143,16 +151,16 @@ int CreateMain(char* fileName, char* authorName)
 	if ( fileExtentionID != INVALID ) {
 	    switch (fileExtentionID) {
 		    case C:
-		        creationResult = MainInC(fileName, authorName, templatePath); 
+		        creationResult = MainInC(fInfo->fileName, fInfo->authorName, templatePath); 
 		        break;
 		    case CPP:
-		        creationResult = MainInCPP(fileName, authorName, templatePath); 
+		        creationResult = MainInCPP(fInfo->fileName, fInfo->authorName, templatePath); 
 		        break;
 		    case PYTHON:
-		        creationResult = MainInPython(fileName, authorName, templatePath);
+		        creationResult = MainInPython(fInfo->fileName, fInfo->authorName, templatePath);
 		        break;
 		    case JAVA:
-		        creationResult = MainInJava(fileName, authorName, templatePath);
+		        creationResult = MainInJava(fInfo->fileName, fInfo->authorName, templatePath);
 		        break;
 		    default: 
 		        creationResult = INVALID; //unsupported fileExtention encountered, throw an error.
@@ -165,7 +173,7 @@ int CreateMain(char* fileName, char* authorName)
 
 	//let user know if they have provided an unsupported language file extention
 	if (creationResult == INVALID) {
-		printf("mm:: CreateMain: ERROR: Encountered unsupported language type: '%s'\n", fileExtention);
+		printf("mm:: CreateMain: ERROR: Encountered unsupported extension: '%s'\n", fileExtention);
 	}
 
 
@@ -385,14 +393,16 @@ int CheckSupportedMain(char* op)
 	int optionID = INVALID;
 
 	//supported file extentions
-	if( strcmp(op, "c") == 0 ) {
-		optionID = C;
-	} else if ( strcmp(op, "c++") == 0 || strcmp(op, "cpp") == 0 ) {
-		optionID = CPP;
-	} else if ( strcmp(op, "py") == 0 ) {
-		optionID = PYTHON;
-	} else if ( strcmp(op, "java") == 0 ) {
-		optionID = JAVA;
+	if(op != NULL) {
+		if( strcmp(op, "c") == 0 ) {
+			optionID = C;
+		} else if ( strcmp(op, "c++") == 0 || strcmp(op, "cpp") == 0 ) {
+			optionID = CPP;
+		} else if ( strcmp(op, "py") == 0 ) {
+			optionID = PYTHON;
+		} else if ( strcmp(op, "java") == 0 ) {
+			optionID = JAVA;
+		}
 	}
 
 
@@ -414,17 +424,82 @@ int CheckSupportedMain(char* op)
  */
 char* ExtractMainType(char* fileName)
 {
-	char* extractedMainType = NULL;
-	extractedMainType = strstr(fileName, ".");
-
-
 	#ifdef DBUG
-	printf("mm:: ExtractMainType: Given: '%s', Extracted: '%s'\n", fileName, extractedMainType+1);
+	printf("mm:: ExtractMainType: Extracting main type from: '%s'\n", fileName);
 	#endif
 
 
-	return (extractedMainType+1);
+	char* extractedMainType = NULL;
+
+	if(fileName != NULL) {
+		extractedMainType = strstr(fileName, ".");
+		extractedMainType = extractedMainType+1;
+	}
+
+
+	#ifdef DBUG
+	printf("mm:: ExtractMainType: Given: '%s', Extracted: '%s'\n", fileName, extractedMainType);
+	#endif
+
+	return extractedMainType;
 }
+
+
+
+FILE_INFO *ExtractUserDetails(int numArgs, char** args)
+{
+	#ifdef DBUG
+    printf("mm:: ExtractUserDetails: Extracting optional author name...\n");
+	#endif
+
+
+    FILE_INFO *fileInfo = malloc(sizeof(FILE_INFO));
+
+    char* fileName = NULL;
+    char* optionalAuthorName = NULL;
+    int fileNameFound = FALSE; //flag for finding first occurance of period '.' indicated filename w/ extension
+
+    
+    for (int i = 0; i < numArgs; ++i) {
+    	
+    	#ifdef DBUG
+    	printf("mm:: ExtractUserDetails: Checking for file name in: '%s'...\n", args[i]);
+	    #endif
+
+    	//first find argument containing the period, because author name is all arguments occurang after it.
+        if( (strchr(args[i], '.') != NULL) && (fileNameFound == FALSE) ) {
+        	//file name is the string with the first occurance of a '.' char
+        	fileName = strdup(args[i]);
+        	fileNameFound = TRUE;
+
+	        //If there may be an author name, prep for receiving it
+        	if( i < (numArgs-1) ) {
+        		optionalAuthorName = "";
+        	}
+           
+	        #ifdef DBUG
+            printf("mm:: ExtractUserDetails: Found file name: '%s'\n", fileName);
+            #endif
+        } else if ( (fileNameFound == TRUE) && (i <= numArgs) ) {
+        	optionalAuthorName = concat(optionalAuthorName, args[i]);
+        	optionalAuthorName = concat(optionalAuthorName, " "); //for nicer spacing in overloaded author name
+
+	        #ifdef DBUG
+        	printf("mm:: ExtractUserDetails: Concating author name to: '%s'\n", optionalAuthorName);
+            #endif
+        }
+    }
+
+    //prep local file info for returning
+    fileInfo->fileName = fileName;
+    fileInfo->authorName = optionalAuthorName;
+    fileInfo->fileExtension = ExtractMainType(fileName);
+    fileInfo->fileExtensionID = CheckSupportedMain(fileInfo->fileExtension);
+
+
+	return fileInfo;
+}
+
 
 
 /**
@@ -449,9 +524,25 @@ void DisplayUsage()
  * Display file creation name and author name to user.
  *
  */
-void DisplayVerbose(char* file, char* author)
+void DisplayVerbose(FILE_INFO *fInfo)
 {
-	printf("mm:: Created '%s' with author '%s'.\n", file, author);
+	if(fInfo != NULL) {
+		printf("mm:: Created '%s' with author '%s'.\n", fInfo->fileName, fInfo->authorName);
+	} else {
+		printf("mm:: ERROR: Invalid file info provided!\n");
+	}
+
+	return;
+}
+
+
+void DisplayFileInfo(FILE_INFO *fInfo)
+{
+	if(fInfo != NULL) {
+		printf("mm:: DisplayFileInfo: FileName: '%s', AuthorName: '%s'.\n", fInfo->fileName, fInfo->authorName);
+	} else {
+		printf("mm:: DisplayFileInfo: ERROR: Invalid file Info encountered.\n");
+	}
 
 	return;
 }
