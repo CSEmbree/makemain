@@ -54,6 +54,7 @@ void SetOptions(char* options);
 
 void DisplayUsage();
 void DisplayVerbose(FILE_INFO* fInfo);
+void DisplayFileInfo(FILE_INFO *fInfo);
 
 
 
