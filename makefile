@@ -1,4 +1,4 @@
-CC=gcc -std=c99
+CC=gcc -std=c99 -D_GNU_SOURCE
 CFLAGS=-Wall
 DEBUG=-g -DDBUG
 
