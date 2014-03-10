@@ -20,8 +20,9 @@ echo "done" >> mm
 #check for setting an author by default every time
 echo "mm:: Want to enter a permanent author name?: [Y/n]"
 read ans
-	
-if [ "$ans" == "Y" ]; then
+yesAns="Y"
+
+if [ $ans = $yesAns ]; then
 	#save author preferences into wrapper script
     echo "mm:: Please enter a permanent author name: "
     read authorName
